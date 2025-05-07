@@ -69,6 +69,24 @@ Before running the consumer script, you need to create the **keyspace** and **ta
    SELECT * FROM atividade_cassandra.vendas;
    ```
 
+## Set Up Kafka Topic
+
+Before sending data, you need to create the Kafka topic called `vendas_ecommerce`:
+
+1. Make sure Kafka is running (along with ZooKeeper).
+
+2. Create the topic:
+
+   ```bash
+   kafka-topics.sh --create --topic vendas_ecommerce --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   ```
+
+3. To confirm the topic was created:
+
+   ```bash
+   kafka-topics.sh --list --bootstrap-server localhost:9092
+   ```
+
 ## Files
 
 ### `producer.py`
