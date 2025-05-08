@@ -51,17 +51,18 @@ Before running the consumer script, you need to create the **keyspace** and **ta
 
 5. Create the table:
    ```sql
-   CREATE TABLE IF NOT EXISTS vendas (
-       cliente_id TEXT,
-       data_compra DATE,
-       hora_compra TIME,
-       produto TEXT,
-       quantidade INT,
-       preco_unitario FLOAT,
-       valor_total FLOAT,
-       forma_pagamento TEXT,
-       PRIMARY KEY ((cliente_id), data_compra, hora_compra)
-   );
+    CREATE TABLE IF NOT EXISTS vendas (
+        cliente_id TEXT,
+        data_compra DATE,
+        hora_compra TIME,
+        produto TEXT,
+        quantidade INT,
+        preco_unitario FLOAT,
+        valor_total FLOAT,
+        forma_pagamento TEXT,
+        PRIMARY KEY ((cliente_id), data_compra, hora_compra)
+    );
+
    ```
 
 6. To verify that everything is working:
