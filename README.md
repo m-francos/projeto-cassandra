@@ -24,6 +24,70 @@ This project demonstrates how to consume Kafka data streams with PySpark and sto
 
 4. Configure the Kafka and Cassandra servers in your environment if necessary (default configurations are set for local setups).
 
+## Set Up Apache Cassandra
+
+Before running the consumer script, you need to create the **keyspace** and **table** in Cassandra:
+
+1. Start Cassandra:
+   ```bash
+   cassandra
+   ```
+
+2. Open the Cassandra shell:
+   ```bash
+   cqlsh
+   ```
+
+3. Create the keyspace:
+   ```sql
+   CREATE KEYSPACE IF NOT EXISTS atividade_cassandra
+   WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+   ```
+
+4. Use the keyspace:
+   ```sql
+   USE atividade_cassandra;
+   ```
+
+5. Create the table:
+   ```sql
+    CREATE TABLE IF NOT EXISTS vendas (
+        cliente_id TEXT,
+        data_compra DATE,
+        hora_compra TIME,
+        produto TEXT,
+        quantidade INT,
+        preco_unitario FLOAT,
+        valor_total FLOAT,
+        forma_pagamento TEXT,
+        PRIMARY KEY ((cliente_id), data_compra, hora_compra)
+    );
+
+   ```
+
+6. To verify that everything is working:
+   ```sql
+   SELECT * FROM atividade_cassandra.vendas;
+   ```
+
+## Set Up Kafka Topic
+
+Before sending data, you need to create the Kafka topic called `vendas_ecommerce`:
+
+1. Make sure Kafka is running (along with ZooKeeper).
+
+2. Create the topic:
+
+   ```bash
+   kafka-topics.sh --create --topic vendas_ecommerce --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   ```
+
+3. To confirm the topic was created:
+
+   ```bash
+   kafka-topics.sh --list --bootstrap-server localhost:9092
+   ```
+
 ## Files
 
 ### `producer.py`
@@ -52,7 +116,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-1. Ensure Kafka and Cassandra are up and running locally or on the appropriate server.
+1. Ensure Kafka and Cassandra are up and running.
 2. Run the producer script to simulate sales data being sent to Kafka:
 
     ```bash
@@ -65,7 +129,7 @@ pip install -r requirements.txt
     python consumer.py
     ```
 
-4. Check Cassandra to verify that the data has been inserted correctly into the specified keyspace and table.
+4. Open `cqlsh` and check if the data is being saved:
     ```bash
     cqlsh
     ```
@@ -73,21 +137,24 @@ pip install -r requirements.txt
     SELECT * FROM atividade_cassandra.vendas;
     ```
 
-## Project Architecture
+## Project Overview
 
-- **Producer (Kafka)**: Sends generated sales data to the Kafka topic.
-- **Consumer (PySpark + Cassandra)**: Consumes data from the Kafka topic, processes it using Spark Structured Streaming, and stores it in Cassandra.
+- **Producer**: Sends fake sales data to Kafka.
+- **Kafka Topic**: Receives the data in real-time.
+- **Consumer (with Spark)**: Reads the data and saves it into Cassandra.
+- **Cassandra**: Stores the data for later use or analysis.
 
 ## Notes
 
-- The project assumes you have local installations of Kafka and Cassandra. You might need to configure the connection settings (e.g., `localhost:9092` for Kafka and `localhost` for Cassandra) in case you are using remote servers or different ports.
-- The script uses Spark to process and transform the data in real time and then stores it in Cassandra for efficient querying.
+- This project uses default settings like `localhost:9092` for Kafka and `localhost` for Cassandra. If you're running them on another machine or port, update the scripts.
+- The data is generated randomly with `Faker`, so it’s good for testing and learning.
+- The Spark consumer works in streaming mode — it keeps running and listening to new data coming from Kafka.
 
 ## Troubleshooting
 
-- If you encounter issues with Kafka or Cassandra, check the logs for detailed error messages.
-- Ensure Kafka is running and the topic exists before running the producer.
-- For Cassandra, make sure the keyspace and table are set up correctly before running the consumer.
+- If something doesn’t work, check if all services (Kafka, Spark, Cassandra) are running.
+- Make sure the topic exists in Kafka before starting the producer.
+- Check if you created the Cassandra keyspace and table correctly.
 
 ## License
 
