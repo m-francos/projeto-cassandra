@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, explode, lit
+from pyspark.sql.functions import col, from_json, explode, lit, to_date, date_format
 from pyspark.sql.types import StructType, StructField, StringType, ArrayType, IntegerType, FloatType, TimestampType
 
 spark = SparkSession.builder \
@@ -28,17 +28,22 @@ schema = StructType([
 
 def salvar_no_cassandra(batch_df, batch_id):
     batch_df = batch_df.filter(col("data_hora_venda").isNotNull())
-    dados_cassandra = batch_df.withColumn("valor_total", col("quantidade") * col("preco_unitario")) \
-        .select(
-            col("documento_cliente").alias("cliente_id"),
-            col("id_ordem").alias("produto_id"),
-            col("data_hora_venda").alias("data_compra"),
-            col("produto"),
-            col("quantidade"),
-            col("preco_unitario"),
-            col("valor_total"),
-            lit("Cartão").alias("forma_pagamento")
-        )
+    
+    batch_df = batch_df.withColumn("data_compra", to_date(col("data_hora_venda"))) \
+                       .withColumn("hora_compra", date_format(col("data_hora_venda"), "HH:mm:ss")) \
+                       .withColumn("valor_total", col("quantidade") * col("preco_unitario"))
+    
+    dados_cassandra = batch_df.select(
+        col("documento_cliente").alias("cliente_id"),
+        col("data_compra"),
+        col("hora_compra"),
+        col("produto"),
+        col("quantidade"),
+        col("preco_unitario"),
+        col("valor_total"),
+        lit("Cartão").alias("forma_pagamento")
+    )
+
     try:
         dados_cassandra.write \
             .format("org.apache.spark.sql.cassandra") \
